@@ -3,29 +3,25 @@ pipeline {
 
     stages {
 
-        stage('Clone') {
+        stage('Build Docker Image') {
             steps {
-                git 'https://github.com/NancyKargwal1/flask-devops-demo.git'
+                bat 'docker build -t flask-demo .'
             }
         }
 
-        stage('Build') {
+        stage('Stop Old Container') {
             steps {
-                sh 'docker build -t flask-demo .'
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                sh '''
-                docker stop flask-demo || true
-                docker rm flask-demo || true
-
-                docker run -d \
-                --name flask-demo \
-                -p 5000:5000 \
-                flask-demo
+                bat '''
+                docker stop flask-demo
+                docker rm flask-demo
+                exit /b 0
                 '''
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                bat 'docker run -d --name flask-demo -p 5000:5000 flask-demo'
             }
         }
     }
